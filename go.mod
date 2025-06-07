@@ -1,4 +1,4 @@
-module KongConnect
+module com.kong.connect
 
 go 1.24
 
