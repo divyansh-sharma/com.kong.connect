@@ -56,9 +56,11 @@ func createTables() error {
 		UNIQUE(service_id, version)
 	);`
 
+	log.Println("Creating services table")
 	if _, err := DB.Exec(serviceTable); err != nil {
 		return err
 	}
+	log.Println("Created services table")
 
 	if _, err := DB.Exec(versionTable); err != nil {
 		return err
@@ -70,6 +72,7 @@ func createTables() error {
 // seedData inserts sample data based on the UI
 func seedData() error {
 	// Check if data already exists
+	log.Println("Checking seed data")
 	var count int
 	err := DB.QueryRow("SELECT COUNT(*) FROM services").Scan(&count)
 	if err != nil {
