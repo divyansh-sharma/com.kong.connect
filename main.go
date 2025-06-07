@@ -1,21 +1,83 @@
 package main
 
 import (
-	"fmt"
+	"log"
+	"net/http"
+	"os"
+
+	"github.com/gorilla/mux"
+
+	"com.kong.connect/database"
+	"com.kong.connect/handler"
+	"com.kong.connect/repository"
+	"com.kong.connect/service"
 )
 
-//TIP <p>To run your code, right-click the code and select <b>Run</b>.</p> <p>Alternatively, click
-// the <icon src="AllIcons.Actions.Execute"/> icon in the gutter and select the <b>Run</b> menu item from here.</p>
-
 func main() {
-	//TIP <p>Press <shortcut actionId="ShowIntentionActions"/> when your caret is at the underlined text
-	// to see how GoLand suggests fixing the warning.</p><p>Alternatively, if available, click the lightbulb to view possible fixes.</p>
-	s := "gopher"
-	fmt.Println("Hello and welcome, %s!", s)
-
-	for i := 1; i <= 5; i++ {
-		//TIP <p>To start your debugging session, right-click your code in the editor and select the Debug option.</p> <p>We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-		// for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.</p>
-		fmt.Println("i =", 100/i)
+	// Get database path from environment or use default
+	dbPath := os.Getenv("DB_PATH")
+	if dbPath == "" {
+		dbPath = "./services.db"
 	}
+
+	// Initialize database
+	if err := database.InitDB(dbPath); err != nil {
+		log.Fatal("Failed to initialize database:", err)
+	}
+
+	// Initialize layers
+	serviceRepo := repository.NewServiceRepository(database.DB)
+	serviceService := service.NewServiceService(serviceRepo)
+	serviceHandler := handler.NewServiceHandler(serviceService)
+
+	// Setup router
+	router := mux.NewRouter()
+
+	// Register routes
+	serviceHandler.RegisterRoutes(router)
+
+	// Add CORS middleware for development
+	router.Use(corsMiddleware)
+
+	// Add logging middleware
+	router.Use(loggingMiddleware)
+
+	// Health check endpoint
+	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	}).Methods("GET")
+
+	// Get port from environment or use default
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	log.Printf("Server starting on port %s", port)
+	log.Fatal(http.ListenAndServe(":"+port, router))
+}
+
+// corsMiddleware adds CORS headers
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+// loggingMiddleware logs HTTP requests
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("%s %s %s", r.Method, r.RequestURI, r.RemoteAddr)
+		next.ServeHTTP(w, r)
+	})
 }
