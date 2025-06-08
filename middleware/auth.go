@@ -75,3 +75,8 @@ func RoleAuthorization(allowedRoles ...string) func(http.Handler) http.Handler {
 		})
 	}
 }
+
+// AuthorizeRoles wraps a handler with authentication and role authorization
+func AuthorizeRoles(handler http.HandlerFunc, allowedRoles ...string) http.HandlerFunc {
+	return AuthMiddleware(RoleAuthorization(allowedRoles...)(handler)).ServeHTTP
+}

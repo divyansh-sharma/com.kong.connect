@@ -85,10 +85,3 @@ func (h *ServiceHandler) GetServiceByID(w http.ResponseWriter, r *http.Request) 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(service)
 }
-
-// RegisterRoutes registers all service routes
-func (h *ServiceHandler) RegisterRoutes(router *mux.Router) {
-	api := router.PathPrefix("/api/v1").Subrouter()
-	api.HandleFunc("/services", h.GetServices).Methods("GET")
-	api.HandleFunc("/services/{id:[0-9]+}", h.GetServiceByID).Methods("GET")
-}
