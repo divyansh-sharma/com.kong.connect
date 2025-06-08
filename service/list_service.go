@@ -8,13 +8,19 @@ import (
 	"com.kong.connect/repository"
 )
 
+// ServiceServiceInterface defines the contract for service operations
+type ServiceServiceInterface interface {
+	GetServices(query domain.ServiceQuery) (*domain.ServiceListResponse, error)
+	GetServiceByID(id int) (*domain.ServiceWithVersions, error)
+}
+
 // ServiceService handles business logic for services
 type ServiceService struct {
 	repo *repository.ServiceRepository
 }
 
 // NewServiceService creates a new service service
-func NewServiceService(repo *repository.ServiceRepository) *ServiceService {
+func NewServiceService(repo *repository.ServiceRepository) ServiceServiceInterface {
 	return &ServiceService{repo: repo}
 }
 

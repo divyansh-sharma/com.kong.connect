@@ -9,6 +9,7 @@ import (
 
 	"com.kong.connect/database"
 	"com.kong.connect/handler"
+	"com.kong.connect/middleware"
 	"com.kong.connect/repository"
 	"com.kong.connect/service"
 )
@@ -35,6 +36,17 @@ func main() {
 
 	// Register routes
 	serviceHandler.RegisterRoutes(router)
+
+	// Apply global authentication middleware
+	router.Use(middleware.AuthMiddleware)
+
+	// Register routes
+	api := router.PathPrefix("/api/v1").Subrouter()
+	api.HandleFunc("/services", serviceHandler.GetServices).Methods("GET")
+	api.HandleFunc("/services/{id:[0-9]+}", serviceHandler.GetServiceByID).Methods("GET")
+
+	// Protect all routes under /api/v1/services with role check
+	api.Use(middleware.RoleAuthorization("admin", "viewer"))
 
 	// Add CORS middleware for development
 	router.Use(corsMiddleware)

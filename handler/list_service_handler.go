@@ -14,11 +14,11 @@ import (
 
 // ServiceHandler handles HTTP requests for services
 type ServiceHandler struct {
-	service *service.ServiceService
+	service service.ServiceServiceInterface
 }
 
 // NewServiceHandler creates a new service handler
-func NewServiceHandler(service *service.ServiceService) *ServiceHandler {
+func NewServiceHandler(service service.ServiceServiceInterface) *ServiceHandler {
 	return &ServiceHandler{service: service}
 }
 
