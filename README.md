@@ -151,9 +151,9 @@ Health check endpoint.
 
 ```bash
 git clone <repository-url>
-cd services-api
+cd com.kong.connect
 go mod tidy
-go run cmd/server/main.go
+go run main.go
 ```
 
 The server will start on port 8080 by default.
@@ -189,21 +189,21 @@ com.kong.connect/
 │    ├── go.sum
 │    └── README.md
 ├── handler/
-├── models/
+├── domain/
 ├── repository/
 ├── service/
-└── middleware/          # Auth middleware lives here
+└── middleware/          
 ├── database/
 ├── test/
 ```
 
 ### Adding New Features
 
-1. **Models**: Define data structures in `internal/models/`
-2. **Repository**: Add data access methods in `internal/repository/`
-3. **Service**: Implement business logic in `internal/service/`
-4. **Handlers**: Add HTTP endpoints in `internal/handlers/`
-5. **Tests**: Write unit and integration tests
+1. **Domain**: Define data structures in `/domain`
+2. **Repository**: Add data access methods in `/repository`
+3. **Service**: Implement business logic in `/service`
+4. **Handlers**: Add HTTP endpoints in `/handler`
+5. **Tests**:  Integration tests in `/test`
 
 ---
 
