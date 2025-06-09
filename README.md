@@ -25,15 +25,13 @@ This API provides endpoints to:
 The application follows a layered architecture:
 
 ```
-cmd/server/          # Application entry point
-internal/
-├── handlers/        # HTTP handlers (Presentation layer)
+com.kong.connect/
+├── handler/        # HTTP handlers (Presentation layer)
 ├── service/         # Business logic (Service layer)
 ├── repository/      # Data access (Repository layer)
 ├── middleware/      # Authentication & Authorization
-└── models/          # Data structures
-pkg/
-└── database/        # Database connection and setup
+├── domain/          # Data structures
+└── test/            # Integration test
 ```
 
 ### Design Considerations
@@ -63,7 +61,7 @@ Authorization: Bearer <token>
 | `viewer-token`  | `viewer` | Read-only access   |
 | *Invalid token* | -        | `401 Unauthorized` |
 
-> In production, replace this with proper JWT validation.
+> In production, we will replace this with proper JWT validation.
 
 ### Authorization
 
@@ -94,11 +92,10 @@ curl "http://localhost:8080/api/v1/services"
 
    * `AuthMiddleware`: Validates the token and injects user context
    * `RoleAuthorization`: Ensures user has required role(s)
-* **Route Protection (in `main.go`)**
+* **Route Protection (in `routing.go`)**
 
   ```go
-  router.Use(AuthMiddleware)
-  api.Use(RoleAuthorization("admin", "viewer"))
+  middleware.AuthorizeRoles(<handler>, ... allowed roles),
   ```
 
 ---
@@ -176,7 +173,7 @@ go test ./...
 go test -cover ./...
 
 # Run specific test
-go test ./internal/service/
+go test ./service
 ```
 
 ---
@@ -186,22 +183,18 @@ go test ./internal/service/
 ### Project Structure
 
 ```
-services-api/
-├── cmd/server/
-│   └── main.go
-├── internal/
-│   ├── handlers/
-│   ├── models/
-│   ├── repository/
-│   ├── service/
-│   └── middleware/          # Auth middleware lives here
-├── pkg/
-│   └── database/
-├── tests/
-├── docs/
-├── go.mod
-├── go.sum
-└── README.md
+com.kong.connect/
+│    └── main.go
+│    ├── go.mod
+│    ├── go.sum
+│    └── README.md
+├── handler/
+├── models/
+├── repository/
+├── service/
+└── middleware/          # Auth middleware lives here
+├── database/
+├── test/
 ```
 
 ### Adding New Features
